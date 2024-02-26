@@ -25,6 +25,12 @@ Game::Game() :
 	if (!boingBuffer.loadFromFile("ASSETS\\boing.wav")) {
 		return;
 	}
+	if (!deathBuffer.loadFromFile("ASSETS\\death.wav"))
+	{
+		std::cout << "Death no load";
+		return;
+	}
+	deathSound.setBuffer(deathBuffer);
 }
 
 /// <summary>
@@ -149,6 +155,7 @@ void Game::update(sf::Time t_deltaTime)
 							break;
 						}
 						else {
+							deathSound.play();
 							init();
 						}
 					}
@@ -163,14 +170,16 @@ void Game::update(sf::Time t_deltaTime)
 				{
 					if (playerShape.getGlobalBounds().intersects(level[col][row].getGlobalBounds()))
 					{
+						deathSound.play();
 						init();
 					}
 				}
 			}
-			if (levelData[col][row] == 2)
+			if (levelData[col][row] == 2 || levelData[col][row] == 4 || levelData[col][row] == 5)
 			{
 				if (playerShape.getGlobalBounds().intersects(level[col][row].getGlobalBounds()))
 				{
+					deathSound.play();
 					init();
 				}
 			}
@@ -182,12 +191,21 @@ void Game::update(sf::Time t_deltaTime)
 					velocityY=-20;
 				}
 			}
+
+			if (levelData[col][row] == 100)
+			{
+				if (playerShape.getGlobalBounds().intersects(level[col][row].getGlobalBounds()))
+				{
+					std::cout << "Win";
+				}
+			}
 		}
 
 	}
 
 	if (playerShape.getPosition().y > 600)
 	{
+		deathSound.play();
 		init();
 	}
 
@@ -238,10 +256,13 @@ void Game::setupFontAndText()
 /// </summary>
 void Game::init()
 {
+	velocityY = 0;
 	view = m_window.getDefaultView();
 	playerShape.setSize(sf::Vector2f(20, 20));
 	playerShape.setPosition(160, 500);
+	
 	boingSound.setBuffer(boingBuffer);
+	
 	
 	for (int row = 0; row < numRows; row++)
 	{
@@ -262,7 +283,7 @@ void Game::init()
 				level[col][row].setPosition(row * 70, col * 30);
 				level[col][row].setFillColor(sf::Color::Black);
 			}
-			if (levelData[col][row] == 2)
+			if (levelData[col][row] == 2|| levelData[col][row] == 4 || levelData[col][row] == 5)
 			{
 				level[col][row].setSize(sf::Vector2f(70, 30));
 				level[col][row].setPosition(row * 70, col * 30);
@@ -276,6 +297,13 @@ void Game::init()
 				level[col][row].setPosition(row * 70, col * 30);
 
 				level[col][row].setFillColor(sf::Color::Yellow);
+			}
+			if (levelData[col][row] == 100)
+			{
+				level[col][row].setSize(sf::Vector2f(70, 30));
+				level[col][row].setPosition(row * 70, col * 30);
+
+				level[col][row].setFillColor(sf::Color::Cyan);
 			}
 
 		}
