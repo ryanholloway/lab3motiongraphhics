@@ -1,6 +1,6 @@
 /// <summary>
-/// @author Peter Lowe
-/// @date May 2019
+/// @author Ryan
+/// @date 
 ///
 /// you need to change the above lines or lose marks
 /// </summary>
@@ -108,65 +108,86 @@ void Game::processKeys(sf::Event t_event)
 /// <param name="t_deltaTime">time interval per frame</param>
 void Game::update(sf::Time t_deltaTime)
 {
+	
 	if (m_exitGame)
 	{
 		m_window.close();
 	}
-	for (int row = 0; row < numRows; row++)
+	if (!won)
 	{
-		for (int col = 0; col < numCols; col++)
+		for (int row = 0; row < numRows; row++)
 		{
+			for (int col = 0; col < numCols; col++)
+			{
 
-			level[col][row].move(-3.5, 0);
+				level[col][row].move(-3.5, 0);
+				//spritesheet.setPosition(playerShape.getPosition());
+			}
+
+		}
+		frameTime += clock.restart().asSeconds();
+		if (frameTime >= timePerFrame) {
+			currentFrame++;
+			if (currentFrame >= 8)
+				currentFrame = 0;
+
+			frameTime = 0.0f;
+		}
+		playerShape.setTextureRect(frames[currentFrame]);
+
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && velocityY == 0)
+		{
+			boingSound.play();
+			velocityY = -11.8;
 		}
 
-	}
+		velocityY = velocityY + gravity;
+		playerShape.move(0, velocityY);
 
 
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && velocityY == 0)
-	{
-		boingSound.play();
-		velocityY = -11.8;
-	}
+		gravity = 0.6;
 
-	velocityY = velocityY + gravity;
-	playerShape.move(0, velocityY);
-
-
-	gravity = 0.6;
-
-	for (int row = 0; row < numRows; row++)
-	{
-		for (int col = 0; col < numCols; col++)
+		for (int row = 0; row < numRows; row++)
 		{
-			if (velocityY >= 0)
+			for (int col = 0; col < numCols; col++)
 			{
-				if (levelData[col][row] == 1)
+				if (velocityY >= 0)
 				{
-
-					if (playerShape.getGlobalBounds().intersects(level[col][row].getGlobalBounds()))
+					if (levelData[col][row] == 1)
 					{
-						if (playerShape.getPosition().y < level[col][row].getPosition().y)
+
+						if (playerShape.getGlobalBounds().intersects(level[col][row].getGlobalBounds()))
 						{
-							gravity = 0;
-							velocityY = 0;
-							playerShape.setPosition(playerShape.getPosition().x, level[col][row].getPosition().y);
-							playerShape.move(0, -playerShape.getGlobalBounds().height);
-							break;
+							if (playerShape.getPosition().y < level[col][row].getPosition().y)
+							{
+								gravity = 0;
+								velocityY = 0;
+								playerShape.setPosition(playerShape.getPosition().x, level[col][row].getPosition().y);
+								playerShape.move(0, -playerShape.getGlobalBounds().height);
+								break;
+							}
+							else {
+								deathSound.play();
+								init();
+							}
 						}
-						else {
+
+
+					}
+
+				}
+				if (velocityY < 0)
+				{
+					if (levelData[col][row] == 1)
+					{
+						if (playerShape.getGlobalBounds().intersects(level[col][row].getGlobalBounds()))
+						{
 							deathSound.play();
 							init();
 						}
 					}
-
-
 				}
-
-			}
-			if (velocityY < 0)
-			{
-				if (levelData[col][row] == 1)
+				if (levelData[col][row] == 2 || levelData[col][row] == 4 || levelData[col][row] == 5)
 				{
 					if (playerShape.getGlobalBounds().intersects(level[col][row].getGlobalBounds()))
 					{
@@ -174,50 +195,49 @@ void Game::update(sf::Time t_deltaTime)
 						init();
 					}
 				}
-			}
-			if (levelData[col][row] == 2 || levelData[col][row] == 4 || levelData[col][row] == 5)
-			{
-				if (playerShape.getGlobalBounds().intersects(level[col][row].getGlobalBounds()))
+				if (levelData[col][row] == 3)
 				{
-					deathSound.play();
-					init();
+					if (playerShape.getGlobalBounds().intersects(level[col][row].getGlobalBounds()))
+					{
+						boingSound.play();
+						velocityY = -20;
+					}
 				}
-			}
-			if (levelData[col][row] == 3)
-			{
-				if (playerShape.getGlobalBounds().intersects(level[col][row].getGlobalBounds()))
+
+				if (levelData[col][row] == 100)
 				{
-					boingSound.play();
-					velocityY=-20;
+					if (playerShape.getGlobalBounds().intersects(level[col][row].getGlobalBounds()))
+					{
+						std::cout << "Win";
+						won = true;
+					}
+				}
+				if (levelData[col][row] == 6)
+				{
+					if (playerShape.getGlobalBounds().intersects(level[col][row].getGlobalBounds()))
+					{
+						boingSound.play();
+						velocityY = 20;
+					}
 				}
 			}
 
-			if (levelData[col][row] == 100)
-			{
-				if (playerShape.getGlobalBounds().intersects(level[col][row].getGlobalBounds()))
-				{
-					std::cout << "Win";
-				}
-			}
-			if (levelData[col][row] == 6)
-			{
-				if (playerShape.getGlobalBounds().intersects(level[col][row].getGlobalBounds()))
-				{
-					boingSound.play();
-					velocityY = 20;
-				}
-			}
+		}
+
+		if (playerShape.getPosition().y > 600)
+		{
+			deathSound.play();
+			init();
 		}
 
 	}
-
-	if (playerShape.getPosition().y > 600)
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::R))
 	{
-		deathSound.play();
-		init();
+		if (won)
+		{
+			init();
+		}
 	}
-
-
 }
 
 /// <summary>
@@ -226,6 +246,7 @@ void Game::update(sf::Time t_deltaTime)
 void Game::render()
 {
 	m_window.clear(sf::Color::White);
+	m_window.draw(background);
 	for (int row = 0; row < numRows; row++)
 	{
 		for (int col = 0; col < numCols; col++)
@@ -235,6 +256,7 @@ void Game::render()
 		}
 	}
 	m_window.draw(playerShape);
+	//m_window.draw(spritesheet);
 
 	m_window.display();
 }
@@ -256,7 +278,18 @@ void Game::setupFontAndText()
 	m_welcomeMessage.setOutlineColor(sf::Color::Red);
 	m_welcomeMessage.setFillColor(sf::Color::Black);
 	m_welcomeMessage.setOutlineThickness(3.0f);
-
+	if (!spritesheetTexture.loadFromFile("ASSETS\\IMAGES\\spritesheet.png"))
+	{
+		std::cout << "problem loading spritesheet" << std::endl;
+	}
+	if (!mapItemsTexture.loadFromFile("ASSETS\\IMAGES\\mapItems.png"))
+	{
+		std::cout << "problem loading mapItems" << std::endl;
+	}
+	if (!tempBacktexture.loadFromFile("ASSETS\\IMAGES\\backgroundTemp.png"))
+	{
+		std::cout << "problem loading background" << std::endl;
+	}
 }
 
 /// <summary>
@@ -264,47 +297,59 @@ void Game::setupFontAndText()
 /// </summary>
 void Game::init()
 {
+	won = false;
 	velocityY = 0;
 	view = m_window.getDefaultView();
 	playerShape.setSize(sf::Vector2f(20, 20));
 	playerShape.setPosition(160, 500);
-	
+	background.setSize((sf::Vector2f(m_window.getSize().x, m_window.getSize().y)));
+	background.setTexture(&tempBacktexture);
 	boingSound.setBuffer(boingBuffer);
-	
+	playerShape.setTexture(&spritesheetTexture);
+	/*spritesheet.setScale(sf::Vector2f(0.08f, 0.08f));*/
 	
 	for (int row = 0; row < numRows; row++)
 	{
 		for (int col = 0; col < numCols; col++)
 		{
-
+			
 			if (levelData[col][row] == 1)
 			{
-
+				level[col][row].setTexture(&mapItemsTexture);
 				level[col][row].setSize(sf::Vector2f(70, 30));
 				level[col][row].setPosition(row * 70, col * 30);
-				level[col][row].setFillColor(sf::Color::Red);
+				level[col][row].setTextureRect(mapItemsI[3]);
 			}
 			if (levelData[col][row] == 0)
 			{
-
 				level[col][row].setSize(sf::Vector2f(70, 30));
 				level[col][row].setPosition(row * 70, col * 30);
-				level[col][row].setFillColor(sf::Color::Black);
+				level[col][row].setFillColor(sf::Color::Transparent);
 			}
-			if (levelData[col][row] == 2|| levelData[col][row] == 4 || levelData[col][row] == 5)
+			if (levelData[col][row] == 2|| levelData[col][row] == 4)
 			{
+				level[col][row].setTexture(&mapItemsTexture);
 				level[col][row].setSize(sf::Vector2f(70, 30));
 				level[col][row].setPosition(row * 70, col * 30);
 
-				level[col][row].setFillColor(sf::Color::Blue);
+				level[col][row].setTextureRect(mapItemsI[2]);
+			}
+			if (levelData[col][row] == 5)
+			{
 
+				level[col][row].setTexture(&mapItemsTexture);
+				level[col][row].setSize(sf::Vector2f(70, 30));
+				level[col][row].setPosition(row * 70, col * 30);
+
+				level[col][row].setTextureRect(mapItemsI[1]);
 			}
 			if (levelData[col][row] == 3)
 			{
+				level[col][row].setTexture(&mapItemsTexture);
 				level[col][row].setSize(sf::Vector2f(70, 30));
 				level[col][row].setPosition(row * 70, col * 30);
 
-				level[col][row].setFillColor(sf::Color::Yellow);
+				level[col][row].setTextureRect(mapItemsI[0]);
 			}
 			if (levelData[col][row] == 100)
 			{
@@ -315,10 +360,11 @@ void Game::init()
 			}
 			if (levelData[col][row] == 6)
 			{
+				level[col][row].setTexture(&mapItemsTexture);
 				level[col][row].setSize(sf::Vector2f(70, 30));
 				level[col][row].setPosition(row * 70, col * 30);
 
-				level[col][row].setFillColor(sf::Color::Yellow);
+				level[col][row].setTextureRect(mapItemsI[0]);
 			}
 
 		}

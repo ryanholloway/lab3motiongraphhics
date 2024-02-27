@@ -1,5 +1,5 @@
 /// <summary>
-/// author Pete Lowe May 2019
+/// author Ryan Holloway
 /// you need to change the above line or lose marks
 /// </summary>
 #ifndef GAME_HPP
@@ -23,12 +23,14 @@ public:
 	void run();
 
 	sf::RectangleShape playerShape;
-
+	sf::RectangleShape background;
 
 	float velocityX = 0, velocityY = 0, gravity = 0.3;
 
 	sf::SoundBuffer boingBuffer;
 	sf::Sound boingSound;
+
+	bool won{ false };
 
 	sf::SoundBuffer deathBuffer;
 	sf::Sound deathSound;
@@ -99,7 +101,7 @@ public:
 		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1},
 		{0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,1,0,0,2,0,0,0,1},
 		{0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,5,5,5,4,5,5,5,100},
-		{0,0,0,0,0,0,0,0,0,2,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,100},
+		{0,0,0,0,0,0,0,0,0,5,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,100},
 		{0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1,1,1,3,1,1,1,1},
 		{0,0,0,0,0,0,0,0,0,0,0,0,3,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 		{0,0,0,0,0,3,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -121,10 +123,37 @@ public:
 	sf::RenderWindow m_window; // main SFML window
 	sf::Font m_ArialBlackfont; // font used by message
 	sf::Text m_welcomeMessage; // text used for message on screen
-	sf::Texture m_logoTexture; // texture used for sfml logo
-	sf::Sprite m_logoSprite; // sprite used for sfml logo
+	sf::Texture spritesheetTexture; // texture used for sfml logo
+	sf::Sprite spritesheet; // sprite used for sfml logo
 	bool m_exitGame; // control exiting game
 	sf::View view;
+	sf::Texture mapItemsTexture;
+
+	sf::Sprite tempBackground;
+	sf::Texture tempBacktexture;
+
+	sf::IntRect mapItemsI[4] =
+	{
+		{0,505,287,117}, //bounce
+		{0,0,235,215}, //multispike
+		{0,216,337,136}, //top spike
+		{0,353,301,151} //brick
+	};
+
+	sf::IntRect frames[8] = {
+		{564,0,563,757},
+		{1692,0,563,822},
+		{0,0,563,766},
+		{564,767,563,595},
+		{1128,576,563,642},
+		{1128,0,563,575},
+		{0,767,563,672},
+		{1692,823,563,586}
+	};
+	int currentFrame = 0;
+	sf::Clock clock;
+	float frameTime = 0.0f;
+	float timePerFrame = 0.08f;
 
 private:
 
