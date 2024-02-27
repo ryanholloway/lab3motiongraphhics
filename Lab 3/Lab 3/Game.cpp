@@ -199,6 +199,14 @@ void Game::update(sf::Time t_deltaTime)
 					std::cout << "Win";
 				}
 			}
+			if (levelData[col][row] == 6)
+			{
+				if (playerShape.getGlobalBounds().intersects(level[col][row].getGlobalBounds()))
+				{
+					boingSound.play();
+					velocityY = 20;
+				}
+			}
 		}
 
 	}
@@ -304,6 +312,13 @@ void Game::init()
 				level[col][row].setPosition(row * 70, col * 30);
 
 				level[col][row].setFillColor(sf::Color::Cyan);
+			}
+			if (levelData[col][row] == 6)
+			{
+				level[col][row].setSize(sf::Vector2f(70, 30));
+				level[col][row].setPosition(row * 70, col * 30);
+
+				level[col][row].setFillColor(sf::Color::Yellow);
 			}
 
 		}
