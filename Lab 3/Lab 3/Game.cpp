@@ -21,7 +21,8 @@ Game::Game() :
 	m_exitGame{false} //when true game will exit
 {
 	setupFontAndText(); // load font z
-	init(); // load texture
+	init();
+	
 	if (!boingBuffer.loadFromFile("ASSETS\\boing.wav")) {
 		return;
 	}
@@ -108,7 +109,7 @@ void Game::processKeys(sf::Event t_event)
 /// <param name="t_deltaTime">time interval per frame</param>
 void Game::update(sf::Time t_deltaTime)
 {
-	
+
 	if (m_exitGame)
 	{
 		m_window.close();
@@ -141,7 +142,7 @@ void Game::update(sf::Time t_deltaTime)
 		{
 			frameTime += clock.restart().asSeconds();
 			currentFrame = 2;
-			if (frameTime >= timePerFrame+.5) {
+			if (frameTime >= timePerFrame + .5) {
 				currentFrame++;
 				if (currentFrame >= 4)
 					currentFrame = 0;
@@ -150,7 +151,7 @@ void Game::update(sf::Time t_deltaTime)
 			}
 			playerShape.setTextureRect(frames[currentFrame]);
 		}
-		
+
 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && velocityY == 0)
 		{
@@ -165,6 +166,7 @@ void Game::update(sf::Time t_deltaTime)
 
 		gravity = 0.6;
 		std::cout << jumping << std::endl;
+		
 
 		for (int row = 0; row < numRows; row++)
 		{
@@ -172,9 +174,10 @@ void Game::update(sf::Time t_deltaTime)
 			{
 				if (velocityY >= 0)
 				{
+				
 					if (levelData[col][row] == 1)
 					{
-						
+
 						if (playerShape.getGlobalBounds().intersects(level[col][row].getGlobalBounds()))
 						{
 							if (playerShape.getPosition().y < level[col][row].getPosition().y)
@@ -192,14 +195,24 @@ void Game::update(sf::Time t_deltaTime)
 								init();
 							}
 						}
-
-
 					}
 
 				}
-				if (velocityY < 0)
-				{
-					if (levelData[col][row] == 1)
+				
+					if (velocityY < 0)
+					{
+
+						if (levelData[col][row] == 1)
+						{
+							if (playerShape.getGlobalBounds().intersects(level[col][row].getGlobalBounds()))
+							{
+								jumping = false;
+								deathSound.play();
+								init();
+							}
+						}
+					}
+					if (levelData[col][row] == 2 || levelData[col][row] == 4 || levelData[col][row] == 5)
 					{
 						if (playerShape.getGlobalBounds().intersects(level[col][row].getGlobalBounds()))
 						{
@@ -208,61 +221,86 @@ void Game::update(sf::Time t_deltaTime)
 							init();
 						}
 					}
-				}
-				if (levelData[col][row] == 2 || levelData[col][row] == 4 || levelData[col][row] == 5)
-				{
-					if (playerShape.getGlobalBounds().intersects(level[col][row].getGlobalBounds()))
+					if (levelData[col][row] == 3)
 					{
-						jumping = false;
-						deathSound.play();
-						init();
+						if (playerShape.getGlobalBounds().intersects(level[col][row].getGlobalBounds()))
+						{
+							jumping = true;
+							boingSound.play();
+							velocityY = -20;
+						}
 					}
-				}
-				if (levelData[col][row] == 3)
-				{
-					if (playerShape.getGlobalBounds().intersects(level[col][row].getGlobalBounds()))
-					{
-						jumping = true;
-						boingSound.play();
-						velocityY = -20;
-					}
-				}
 
-				if (levelData[col][row] == 100)
-				{
-					if (playerShape.getGlobalBounds().intersects(level[col][row].getGlobalBounds()))
+					if (levelData[col][row] == 100)
 					{
-						jumping = false;
-						std::cout << "Win";
-						won = true;
-						endGameText.setString("\t You Win!\nPress R to Restart");
+						if (playerShape.getGlobalBounds().intersects(level[col][row].getGlobalBounds()))
+						{
+							std::cout << "Win";
+							won = true;
+							endGameText.setString("\t You Win!\nPress R to Restart");
+
+						}
 					}
-				}
-				if (levelData[col][row] == 6)
-				{
-					if (playerShape.getGlobalBounds().intersects(level[col][row].getGlobalBounds()))
+					if (levelData[col][row] == 6)
 					{
-						boingSound.play();
-						velocityY = 20;
-						jumping = true;
+						if (playerShape.getGlobalBounds().intersects(level[col][row].getGlobalBounds()))
+						{
+							boingSound.play();
+							velocityY = 20;
+							jumping = true;
+						}
 					}
-				}
+					if (levelData[col][row] == 7) {
+						// Access tile information or initialize if not present
+						;
+						if (!tilesInfo[col][row].timerRunning) {
+							tilesInfo[col][row].timer.restart(); // Start the timer
+							tilesInfo[col][row].timerRunning = true; // Mark timer as running
+							tilesInfo[col][row].movingUp = true; // Start moving up initially
+						}
+						
+						if (tilesInfo[col][row].movingUp) {
+							level[col][row].move(0, -1); // Move up by 1 pixel
+						}
+						else {
+							level[col][row].move(0, 1); // Move down by 1 pixel
+						}
+
+						// Check if the timer has reached 2 seconds
+						if (tilesInfo[col][row].timer.getElapsedTime().asSeconds() >= 1.5) {
+							
+							// Reverse the movement direction and restart the timer
+							tilesInfo[col][row].movingUp = !tilesInfo[col][row].movingUp;
+							tilesInfo[col][row].timer.restart();
+						}
+						if (playerShape.getGlobalBounds().intersects(level[col][row].getGlobalBounds()))
+						{
+							jumping = false;
+							deathSound.play();
+							init();
+						}
+					}
+
+				
+			}
+
+			if (playerShape.getPosition().y > 600)
+			{
+
+				jumping = false;
+				deathSound.play();
+				init();
 			}
 
 		}
-
-		if (playerShape.getPosition().y > 600)
-		{
-			jumping = false;
-			deathSound.play();
-			init();
-		}
-
+		
+		
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::R))
 	{
 		if (won)
 		{
+			endGameText.setString("");
 			init();
 		}
 	}
@@ -326,6 +364,7 @@ void Game::setupFontAndText()
 /// </summary>
 void Game::init()
 {
+	
 	won = false;
 	velocityY = 0;
 	view = m_window.getDefaultView();
@@ -337,67 +376,98 @@ void Game::init()
 	playerShape.setTexture(&spritesheetTexture);
 	/*spritesheet.setScale(sf::Vector2f(0.08f, 0.08f));*/
 	
+
 	for (int row = 0; row < numRows; row++)
 	{
 		for (int col = 0; col < numCols; col++)
 		{
 			
-			if (levelData[col][row] == 1)
-			{
-				level[col][row].setTexture(&mapItemsTexture);
-				level[col][row].setSize(sf::Vector2f(70, 30));
-				level[col][row].setPosition(row * 70, col * 30);
-				level[col][row].setTextureRect(mapItemsI[3]);
-			}
-			if (levelData[col][row] == 0)
-			{
-				level[col][row].setSize(sf::Vector2f(70, 30));
-				level[col][row].setPosition(row * 70, col * 30);
-				level[col][row].setFillColor(sf::Color::Transparent);
-			}
-			if (levelData[col][row] == 2|| levelData[col][row] == 4)
-			{
-				level[col][row].setTexture(&mapItemsTexture);
-				level[col][row].setSize(sf::Vector2f(70, 30));
-				level[col][row].setPosition(row * 70, col * 30);
+				if (levelData[col][row] == 1)
+				{
+					level[col][row].setTexture(&mapItemsTexture);
+					level[col][row].setSize(sf::Vector2f(70, 30));
+					level[col][row].setPosition(row * 70, col * 30);
+					level[col][row].setTextureRect(mapItemsI[3]);
+				}
+				if (levelData[col][row] == 0)
+				{
+					level[col][row].setSize(sf::Vector2f(70, 30));
+					level[col][row].setPosition(row * 70, col * 30);
+					level[col][row].setFillColor(sf::Color::Transparent);
+				}
+				if (levelData[col][row] == 2 || levelData[col][row] == 4)
+				{
+					level[col][row].setTexture(&mapItemsTexture);
+					level[col][row].setSize(sf::Vector2f(70, 30));
+					level[col][row].setPosition(row * 70, col * 30);
 
-				level[col][row].setTextureRect(mapItemsI[2]);
-			}
-			if (levelData[col][row] == 5)
-			{
+					level[col][row].setTextureRect(mapItemsI[2]);
+				}
+				if (levelData[col][row] == 5)
+				{
 
-				level[col][row].setTexture(&mapItemsTexture);
-				level[col][row].setSize(sf::Vector2f(70, 30));
-				level[col][row].setPosition(row * 70, col * 30);
+					level[col][row].setTexture(&mapItemsTexture);
+					level[col][row].setSize(sf::Vector2f(70, 30));
+					level[col][row].setPosition(row * 70, col * 30);
 
-				level[col][row].setTextureRect(mapItemsI[1]);
-			}
-			if (levelData[col][row] == 3)
-			{
-				level[col][row].setTexture(&mapItemsTexture);
-				level[col][row].setSize(sf::Vector2f(70, 30));
-				level[col][row].setPosition(row * 70, col * 30);
+					level[col][row].setTextureRect(mapItemsI[1]);
+				}
+				if (levelData[col][row] == 3)
+				{
+					level[col][row].setTexture(&mapItemsTexture);
+					level[col][row].setSize(sf::Vector2f(70, 30));
+					level[col][row].setPosition(row * 70, col * 30);
 
-				level[col][row].setTextureRect(mapItemsI[0]);
-			}
-			if (levelData[col][row] == 100)
-			{
-				level[col][row].setSize(sf::Vector2f(70, 30));
-				level[col][row].setPosition(row * 70, col * 30);
+					level[col][row].setTextureRect(mapItemsI[0]);
+				}
+				if (levelData[col][row] == 100)
+				{
+					level[col][row].setSize(sf::Vector2f(70, 30));
+					level[col][row].setPosition(row * 70, col * 30);
 
-				level[col][row].setFillColor(sf::Color::Cyan);
-			}
-			if (levelData[col][row] == 6)
-			{
-				level[col][row].setTexture(&mapItemsTexture);
-				level[col][row].setSize(sf::Vector2f(70, 30));
-				level[col][row].setPosition(row * 70, col * 30);
+					level[col][row].setFillColor(sf::Color::Cyan);
+				}
+				if (levelData[col][row] == 6)
+				{
+					level[col][row].setTexture(&mapItemsTexture);
+					level[col][row].setSize(sf::Vector2f(70, 30));
+					level[col][row].setPosition(row * 70, col * 30);
 
-				level[col][row].setTextureRect(mapItemsI[0]);
+					level[col][row].setTextureRect(mapItemsI[0]);
+				}
+				if (levelData[col][row] == 7)
+				{
+					level[col][row].setTexture(&mapItemsTexture);
+					level[col][row].setSize(sf::Vector2f(70, 30));
+					level[col][row].setPosition(row * 70, col * 30);
+
+					level[col][row].setTextureRect(mapItemsI[1]);
+				}
 			}
+			
+			
 
 		}
-		std::cout << std::endl;
+	std::cout << std::endl;
+}
 
+void Game::init2()
+{
+	won = false;
+	playerShape.setPosition(160, 500);
+	
+	velocityY = 0;
+	
+	levelNo = 2;
+
+	for (int row = 0; row < numRows; row++)
+	{
+		for (int col = 0; col < numCols; col++)
+		{
+			levelData[col][row] = levelData2[col][row];
+		}
 	}
+	init();
+	std::cout << std::endl;
+
 }
