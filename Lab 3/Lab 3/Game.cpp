@@ -210,6 +210,7 @@ void Game::update(sf::Time t_deltaTime)
 					{
 						std::cout << "Win";
 						won = true;
+						endGameText.setString("\t You Win!\nPress R to Restart");
 					}
 				}
 				if (levelData[col][row] == 6)
@@ -245,8 +246,8 @@ void Game::update(sf::Time t_deltaTime)
 /// </summary>
 void Game::render()
 {
-	m_window.clear(sf::Color::White);
-	m_window.draw(background);
+	m_window.clear(sf::Color::Black);
+	//m_window.draw(background);
 	for (int row = 0; row < numRows; row++)
 	{
 		for (int col = 0; col < numCols; col++)
@@ -256,6 +257,7 @@ void Game::render()
 		}
 	}
 	m_window.draw(playerShape);
+	m_window.draw(endGameText);
 	//m_window.draw(spritesheet);
 
 	m_window.display();
@@ -270,14 +272,14 @@ void Game::setupFontAndText()
 	{
 		std::cout << "problem loading arial black font" << std::endl;
 	}
-	m_welcomeMessage.setFont(m_ArialBlackfont);
-	m_welcomeMessage.setString("SFML Game");
-	m_welcomeMessage.setStyle(sf::Text::Underlined | sf::Text::Italic | sf::Text::Bold);
-	m_welcomeMessage.setPosition(40.0f, 40.0f);
-	m_welcomeMessage.setCharacterSize(80U);
-	m_welcomeMessage.setOutlineColor(sf::Color::Red);
-	m_welcomeMessage.setFillColor(sf::Color::Black);
-	m_welcomeMessage.setOutlineThickness(3.0f);
+	endGameText.setFont(m_ArialBlackfont);
+	endGameText.setString("");
+	endGameText.setStyle(sf::Text::Italic | sf::Text::Bold);
+	endGameText.setPosition(m_window.getSize().x/2.0f-180, 240.0f);
+	endGameText.setCharacterSize(40U);
+	endGameText.setOutlineColor(sf::Color::Red);
+	endGameText.setFillColor(sf::Color::White);
+	endGameText.setOutlineThickness(3.0f);
 	if (!spritesheetTexture.loadFromFile("ASSETS\\IMAGES\\spritesheet.png"))
 	{
 		std::cout << "problem loading spritesheet" << std::endl;
