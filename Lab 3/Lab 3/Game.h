@@ -31,6 +31,8 @@ public:
 	sf::Sound boingSound;
 
 	bool won{ false };
+	bool jumping{ false };
+	bool falling{ false };
 
 	sf::SoundBuffer deathBuffer;
 	sf::Sound deathSound;

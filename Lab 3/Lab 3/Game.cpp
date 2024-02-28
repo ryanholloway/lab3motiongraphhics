@@ -125,20 +125,38 @@ void Game::update(sf::Time t_deltaTime)
 			}
 
 		}
-		frameTime += clock.restart().asSeconds();
-		if (frameTime >= timePerFrame) {
-			currentFrame++;
-			if (currentFrame >= 8)
-				currentFrame = 0;
+		if (!jumping)
+		{
+			frameTime += clock.restart().asSeconds();
+			if (frameTime >= timePerFrame) {
+				currentFrame++;
+				if (currentFrame >= 8)
+					currentFrame = 0;
 
-			frameTime = 0.0f;
+				frameTime = 0.0f;
+			}
+			playerShape.setTextureRect(frames[currentFrame]);
 		}
-		playerShape.setTextureRect(frames[currentFrame]);
+		else
+		{
+			frameTime += clock.restart().asSeconds();
+			currentFrame = 2;
+			if (frameTime >= timePerFrame+.5) {
+				currentFrame++;
+				if (currentFrame >= 4)
+					currentFrame = 0;
+
+				frameTime = 0.0f;
+			}
+			playerShape.setTextureRect(frames[currentFrame]);
+		}
+		
 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && velocityY == 0)
 		{
 			boingSound.play();
 			velocityY = -11.8;
+			jumping = true;
 		}
 
 		velocityY = velocityY + gravity;
@@ -146,6 +164,7 @@ void Game::update(sf::Time t_deltaTime)
 
 
 		gravity = 0.6;
+		std::cout << jumping << std::endl;
 
 		for (int row = 0; row < numRows; row++)
 		{
@@ -155,7 +174,7 @@ void Game::update(sf::Time t_deltaTime)
 				{
 					if (levelData[col][row] == 1)
 					{
-
+						
 						if (playerShape.getGlobalBounds().intersects(level[col][row].getGlobalBounds()))
 						{
 							if (playerShape.getPosition().y < level[col][row].getPosition().y)
@@ -164,6 +183,8 @@ void Game::update(sf::Time t_deltaTime)
 								velocityY = 0;
 								playerShape.setPosition(playerShape.getPosition().x, level[col][row].getPosition().y);
 								playerShape.move(0, -playerShape.getGlobalBounds().height);
+								falling = false;
+								jumping = false;
 								break;
 							}
 							else {
@@ -182,6 +203,7 @@ void Game::update(sf::Time t_deltaTime)
 					{
 						if (playerShape.getGlobalBounds().intersects(level[col][row].getGlobalBounds()))
 						{
+							jumping = false;
 							deathSound.play();
 							init();
 						}
@@ -191,6 +213,7 @@ void Game::update(sf::Time t_deltaTime)
 				{
 					if (playerShape.getGlobalBounds().intersects(level[col][row].getGlobalBounds()))
 					{
+						jumping = false;
 						deathSound.play();
 						init();
 					}
@@ -199,6 +222,7 @@ void Game::update(sf::Time t_deltaTime)
 				{
 					if (playerShape.getGlobalBounds().intersects(level[col][row].getGlobalBounds()))
 					{
+						jumping = true;
 						boingSound.play();
 						velocityY = -20;
 					}
@@ -208,6 +232,7 @@ void Game::update(sf::Time t_deltaTime)
 				{
 					if (playerShape.getGlobalBounds().intersects(level[col][row].getGlobalBounds()))
 					{
+						jumping = false;
 						std::cout << "Win";
 						won = true;
 						endGameText.setString("\t You Win!\nPress R to Restart");
@@ -219,6 +244,7 @@ void Game::update(sf::Time t_deltaTime)
 					{
 						boingSound.play();
 						velocityY = 20;
+						jumping = true;
 					}
 				}
 			}
@@ -227,6 +253,7 @@ void Game::update(sf::Time t_deltaTime)
 
 		if (playerShape.getPosition().y > 600)
 		{
+			jumping = false;
 			deathSound.play();
 			init();
 		}
